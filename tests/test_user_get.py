@@ -1,9 +1,21 @@
+import allure
+from allure_commons.types import Severity
+
 from lib.base_case import BaseCase
 from lib.assertions import Assertions
 from lib.my_requests import MyRequests
 
 
+@allure.epic("User cases")
+@allure.feature("Get user data")
 class TestUserGet(BaseCase):
+
+    @allure.title("Get user details without authorization")
+    @allure.story("Public user data")
+    @allure.severity(Severity.NORMAL)
+    @allure.description(
+        "This test checks what user data is available without authorization"
+    )
     def test_get_user_details_not_auth(self):
         response = MyRequests.get(
             "/user/2"
@@ -13,6 +25,12 @@ class TestUserGet(BaseCase):
         Assertions.assert_json_not_has_key(response, "firstName")
         Assertions.assert_json_not_has_key(response, "lastName")
 
+    @allure.title("Get own user details")
+    @allure.story("Own user data")
+    @allure.severity(Severity.CRITICAL)
+    @allure.description(
+        "This test checks that an authorized user can get all their own data"
+    )
     def test_get_user_details_auth_as_same_user(self):
         data = {
             'email': 'vinkotov@example.com',
@@ -37,6 +55,12 @@ class TestUserGet(BaseCase):
         expected_fields = ["username", "email", "firstName", "lastName"]
         Assertions.assert_json_has_keys(response2, expected_fields)
 
+    @allure.title("Get another user's details")
+    @allure.story("Access restrictions")
+    @allure.severity(Severity.CRITICAL)
+    @allure.description(
+        "This test checks that private data of another user is not available"
+    )
     def test_get_user_details_auth_as_other_user(self):
         data = {
             'email': 'vinkotov@example.com',

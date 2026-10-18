@@ -1,9 +1,21 @@
+import allure
+from allure_commons.types import Severity
+
 from lib.base_case import BaseCase
 from lib.assertions import Assertions
 from lib.my_requests import MyRequests
 
 
+@allure.epic("User cases")
+@allure.feature("Edit user")
 class TestUserEdit(BaseCase):
+
+    @allure.title("Successfully edit own user")
+    @allure.story("Positive user editing")
+    @allure.severity(Severity.CRITICAL)
+    @allure.description(
+        "This test checks successful editing of the authorized user's data"
+    )
     def test_edit_just_created_user(self):
         # REGISTER
         register_data = self.prepare_registration_data()
@@ -62,6 +74,12 @@ class TestUserEdit(BaseCase):
         )
 
     # - Попытаемся изменить данные пользователя, будучи неавторизованными
+    @allure.title("Edit user without authorization")
+    @allure.story("Authorization restrictions")
+    @allure.severity(Severity.CRITICAL)
+    @allure.description(
+        "This test checks that user data cannot be changed without authorization"
+    )
     def test_edit_user_without_auth(self):
         register_data = self.prepare_registration_data()
 
@@ -115,6 +133,12 @@ class TestUserEdit(BaseCase):
         )
 
     # - Попытаемся изменить данные пользователя, будучи авторизованными другим пользователем
+    @allure.title("Attempt to edit another user")
+    @allure.story("Authorization restrictions")
+    @allure.severity(Severity.BLOCKER)
+    @allure.description(
+        "This test checks that an authorized user cannot edit another user's data"
+    )
     def test_edit_user_other(self):
         # REGISTER
         register_data = self.prepare_registration_data()
@@ -185,6 +209,12 @@ class TestUserEdit(BaseCase):
         )
 
     # - Попытаемся изменить email пользователя, будучи авторизованными тем же пользователем, на новый email без символа @
+    @allure.title("Edit user with invalid email")
+    @allure.story("Email validation")
+    @allure.severity(Severity.NORMAL)
+    @allure.description(
+        "This test checks that email cannot be changed to a value without the @ symbol"
+    )
     def test_edit_user_with_invalid_email(self):
         # REGISTER
         register_data = self.prepare_registration_data()
@@ -244,6 +274,12 @@ class TestUserEdit(BaseCase):
         )
 
     # - Попытаемся изменить firstName пользователя, будучи авторизованными тем же пользователем, на очень короткое значение в один символ
+    @allure.title("Edit user with too short firstName")
+    @allure.story("First name validation")
+    @allure.severity(Severity.NORMAL)
+    @allure.description(
+        "This test checks that firstName cannot be changed to a one-character value"
+    )
     def test_edit_user_with_short_first_name(self):
         # REGISTER
         register_data = self.prepare_registration_data()

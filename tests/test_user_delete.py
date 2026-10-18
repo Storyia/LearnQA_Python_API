@@ -1,10 +1,22 @@
+import allure
+from allure_commons.types import Severity
+
 from lib.base_case import BaseCase
 from lib.assertions import Assertions
 from lib.my_requests import MyRequests
 
 
+@allure.epic("User cases")
+@allure.feature("Delete user")
 class TestUserDelete(BaseCase):
+
     # Нельзя удалить пользователя с id 2
+    @allure.title("Attempt to delete protected user with ID 2")
+    @allure.story("Protected user deletion")
+    @allure.severity(Severity.CRITICAL)
+    @allure.description(
+        "This test checks that protected test user with ID 2 cannot be deleted"
+    )
     def test_delete_user_id_2(self):
         data = {
             "email": "vinkotov@example.com",
@@ -47,6 +59,12 @@ class TestUserDelete(BaseCase):
         Assertions.assert_json_has_key(response3, "username")
 
     # Позитивное удаление созданного пользователя
+    @allure.title("Successfully delete own user")
+    @allure.story("Positive user deletion")
+    @allure.severity(Severity.CRITICAL)
+    @allure.description(
+        "This test checks successful deletion of the authorized user's account"
+    )
     def test_delete_just_created_user(self):
         # REGISTER
         register_data = self.prepare_registration_data()
@@ -96,6 +114,12 @@ class TestUserDelete(BaseCase):
             f"Unexpected response: {response4.text}"
 
     # Нельзя удалить пользователя, авторизованным другим пользователем
+    @allure.title("Attempt to delete another user")
+    @allure.story("Authorization restrictions")
+    @allure.severity(Severity.BLOCKER)
+    @allure.description(
+        "This test checks that an authorized user cannot delete another user's account"
+    )
     def test_delete_user_as_other_user(self):
         # REGISTER
         register_data = self.prepare_registration_data()
