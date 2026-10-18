@@ -32,6 +32,9 @@ class TestUserDelete(BaseCase):
         )
 
         Assertions.assert_code_status(response2, 400)
+        assert response2.json()["error"] == \
+               "Please, do not delete test users with ID 1, 2, 3, 4 or 5.", \
+            f"Unexpected response: {response2.text}"
 
         # Проверяем, что пользователь все еще существует
         response3 = MyRequests.get(
@@ -80,6 +83,8 @@ class TestUserDelete(BaseCase):
         )
 
         Assertions.assert_code_status(response3, 200)
+        assert response3.json()["success"] == "!", \
+            f"Unexpected response: {response3.text}"
 
         # GET AFTER DELETE
         response4 = MyRequests.get(
@@ -87,6 +92,8 @@ class TestUserDelete(BaseCase):
         )
 
         Assertions.assert_code_status(response4, 404)
+        assert response4.text == "User not found", \
+            f"Unexpected response: {response4.text}"
 
     # Нельзя удалить пользователя, авторизованным другим пользователем
     def test_delete_user_as_other_user(self):
@@ -129,3 +136,13 @@ class TestUserDelete(BaseCase):
         )
 
         Assertions.assert_code_status(response3, 400)
+        assert response3.json()["error"] == \
+               "Please, do not delete test users with ID 1, 2, 3, 4 or 5.", \
+            f"Unexpected response: {response3.text}"
+
+        response4 = MyRequests.get(
+            f"/user/{user_id}"
+        )
+
+        Assertions.assert_code_status(response4, 200)
+        Assertions.assert_json_has_key(response4, "username")

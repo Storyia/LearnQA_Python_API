@@ -68,5 +68,8 @@ class MyRequests:
             response = requests.delete(url, data=data, headers=headers, cookies=cookies, verify=False)
         else:
             raise Exception(f"Bad HTTP '{method}' was received")
+        print(f"\n{method} {url}")
+        print(f"Status: {response.status_code}")
+        print(f"Response: {response.text}")
         Logger.add_response(response)
         return response

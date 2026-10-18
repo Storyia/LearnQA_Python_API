@@ -71,18 +71,48 @@ class TestUserEdit(BaseCase):
         )
 
         Assertions.assert_code_status(response1, 200)
-        Assertions.assert_json_has_key(response1, "id")
 
         user_id = self.get_json_value(response1, "id")
+        email = register_data["email"]
+        password = register_data["password"]
+        old_name = register_data["firstName"]
 
+        # EDIT WITHOUT AUTH
         new_name = "Changed Name"
-
         response2 = MyRequests.put(
             f"/user/{user_id}",
             data={"firstName": new_name}
         )
 
         Assertions.assert_code_status(response2, 400)
+        assert response2.json()["error"] == "Auth token not supplied", \
+            f"Unexpected response: {response2.text}"
+
+        # LOGIN AS OWNER
+        response3 = MyRequests.post(
+            "/user/login",
+            data={
+                "email": email,
+                "password": password
+            }
+        )
+
+        auth_sid = self.get_cookie(response3, "auth_sid")
+        token = self.get_header(response3, "x-csrf-token")
+
+        # CHECK THAT NAME WAS NOT CHANGED
+        response4 = MyRequests.get(
+            f"/user/{user_id}",
+            headers={"x-csrf-token": token},
+            cookies={"auth_sid": auth_sid}
+        )
+
+        Assertions.assert_json_value_by_name(
+            response4,
+            "firstName",
+            old_name,
+            "User name was changed without authorization"
+        )
 
     # - Попытаемся изменить данные пользователя, будучи авторизованными другим пользователем
     def test_edit_user_other(self):
@@ -95,9 +125,9 @@ class TestUserEdit(BaseCase):
         )
 
         Assertions.assert_code_status(response1, 200)
-        Assertions.assert_json_has_key(response1, "id")
 
         user_id = self.get_json_value(response1, "id")
+        old_name = register_data["firstName"]
 
         # LOGIN as other user
         login_data = {
@@ -113,10 +143,6 @@ class TestUserEdit(BaseCase):
         auth_sid = self.get_cookie(response2, "auth_sid")
         token = self.get_header(response2, "x-csrf-token")
 
-        other_user_id = self.get_json_value(response2, "user_id")
-        assert other_user_id != user_id, \
-            "Authorized user and edited user should be different"
-
         # EDIT
         new_name = "Changed Name"
 
@@ -128,6 +154,35 @@ class TestUserEdit(BaseCase):
         )
 
         Assertions.assert_code_status(response3, 400)
+        assert response3.json()["error"] == \
+               "Please, do not edit test users with ID 1, 2, 3, 4 or 5.", \
+            f"Unexpected response: {response3.text}"
+
+        # LOGIN AS OWNER
+        response4 = MyRequests.post(
+            "/user/login",
+            data={
+                "email": register_data["email"],
+                "password": register_data["password"]
+            }
+        )
+
+        owner_auth_sid = self.get_cookie(response4, "auth_sid")
+        owner_token = self.get_header(response4, "x-csrf-token")
+
+        # CHECK
+        response5 = MyRequests.get(
+            f"/user/{user_id}",
+            headers={"x-csrf-token": owner_token},
+            cookies={"auth_sid": owner_auth_sid}
+        )
+
+        Assertions.assert_json_value_by_name(
+            response5,
+            "firstName",
+            old_name,
+            "User name was changed by another user"
+        )
 
     # - Попытаемся изменить email пользователя, будучи авторизованными тем же пользователем, на новый email без символа @
     def test_edit_user_with_invalid_email(self):
@@ -140,7 +195,6 @@ class TestUserEdit(BaseCase):
         )
 
         Assertions.assert_code_status(response1, 200)
-        Assertions.assert_json_has_key(response1, "id")
 
         email = register_data["email"]
         first_name = register_data["firstName"]
@@ -172,7 +226,22 @@ class TestUserEdit(BaseCase):
         )
 
         Assertions.assert_code_status(response3, 400)
+        assert response3.json()["error"] == "Invalid email format", \
+            f"Unexpected response: {response3.text}"
 
+        # CHECK
+        response4 = MyRequests.get(
+            f"/user/{user_id}",
+            headers={"x-csrf-token": token},
+            cookies={"auth_sid": auth_sid}
+        )
+
+        Assertions.assert_json_value_by_name(
+            response4,
+            "email",
+            email,
+            "User email was changed to invalid value"
+        )
 
     # - Попытаемся изменить firstName пользователя, будучи авторизованными тем же пользователем, на очень короткое значение в один символ
     def test_edit_user_with_short_first_name(self):
@@ -188,6 +257,7 @@ class TestUserEdit(BaseCase):
 
         email = register_data["email"]
         password = register_data["password"]
+        old_name = register_data["firstName"]
         user_id = self.get_json_value(response1, "id")
 
         # LOGIN
@@ -211,3 +281,20 @@ class TestUserEdit(BaseCase):
         )
 
         Assertions.assert_code_status(response3, 400)
+        assert response3.json()["error"] == \
+               "The value for field `firstName` is too short", \
+            f"Unexpected response: {response3.text}"
+
+        # CHECK
+        response4 = MyRequests.get(
+            f"/user/{user_id}",
+            headers={"x-csrf-token": token},
+            cookies={"auth_sid": auth_sid}
+        )
+
+        Assertions.assert_json_value_by_name(
+            response4,
+            "firstName",
+            old_name,
+            "User firstName was changed to too short value"
+        )
