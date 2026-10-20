@@ -73,6 +73,27 @@ class TestUserEdit(BaseCase):
             "Wrong name of the user after edit"
         )
 
+        Assertions.assert_json_value_by_name(
+            response4,
+            "email",
+            email,
+            "Email was changed after editing firstName"
+        )
+
+        Assertions.assert_json_value_by_name(
+            response4,
+            "username",
+            register_data["username"],
+            "Username was changed after editing firstName"
+        )
+
+        Assertions.assert_json_value_by_name(
+            response4,
+            "lastName",
+            register_data["lastName"],
+            "LastName was changed after editing firstName"
+        )
+
     # - Попытаемся изменить данные пользователя, будучи неавторизованными
     @allure.title("Edit user without authorization")
     @allure.story("Authorization restrictions")
@@ -130,6 +151,27 @@ class TestUserEdit(BaseCase):
             "firstName",
             old_name,
             "User name was changed without authorization"
+        )
+
+        Assertions.assert_json_value_by_name(
+            response4,
+            "email",
+            register_data["email"],
+            "Email was unexpectedly changed"
+        )
+
+        Assertions.assert_json_value_by_name(
+            response4,
+            "username",
+            register_data["username"],
+            "Username was unexpectedly changed"
+        )
+
+        Assertions.assert_json_value_by_name(
+            response4,
+            "lastName",
+            register_data["lastName"],
+            "LastName was unexpectedly changed"
         )
 
     # - Попытаемся изменить данные пользователя, будучи авторизованными другим пользователем
@@ -273,6 +315,27 @@ class TestUserEdit(BaseCase):
             "User email was changed to invalid value"
         )
 
+        Assertions.assert_json_value_by_name(
+            response4,
+            "firstName",
+            register_data["firstName"],
+            "FirstName was unexpectedly changed"
+        )
+
+        Assertions.assert_json_value_by_name(
+            response4,
+            "username",
+            register_data["username"],
+            "Username was unexpectedly changed"
+        )
+
+        Assertions.assert_json_value_by_name(
+            response4,
+            "lastName",
+            register_data["lastName"],
+            "LastName was unexpectedly changed"
+        )
+
     # - Попытаемся изменить firstName пользователя, будучи авторизованными тем же пользователем, на очень короткое значение в один символ
     @allure.title("Edit user with too short firstName")
     @allure.story("First name validation")
@@ -333,4 +396,25 @@ class TestUserEdit(BaseCase):
             "firstName",
             old_name,
             "User firstName was changed to too short value"
+        )
+
+        Assertions.assert_json_value_by_name(
+            response4,
+            "email",
+            register_data["email"],
+            "Email was unexpectedly changed"
+        )
+
+        Assertions.assert_json_value_by_name(
+            response4,
+            "username",
+            register_data["username"],
+            "Username was unexpectedly changed"
+        )
+
+        Assertions.assert_json_value_by_name(
+            response4,
+            "lastName",
+            register_data["lastName"],
+            "LastName was unexpectedly changed"
         )

@@ -26,6 +26,53 @@ class TestUserRegister(BaseCase):
         Assertions.assert_code_status(response, 200)
         Assertions.assert_json_has_key(response, 'id')
 
+        user_id = self.get_json_value(response, "id")
+
+        response_login = MyRequests.post(
+            "/user/login",
+            data={
+                "email": data["email"],
+                "password": data["password"]
+            }
+        )
+
+        auth_sid = self.get_cookie(response_login, "auth_sid")
+        token = self.get_header(response_login, "x-csrf-token")
+
+        response_get = MyRequests.get(
+            f"/user/{user_id}",
+            headers={"x-csrf-token": token},
+            cookies={"auth_sid": auth_sid}
+        )
+
+        Assertions.assert_json_value_by_name(
+            response_get,
+            "username",
+            data["username"],
+            "Wrong username after registration"
+        )
+
+        Assertions.assert_json_value_by_name(
+            response_get,
+            "email",
+            data["email"],
+            "Wrong email after registration"
+        )
+
+        Assertions.assert_json_value_by_name(
+            response_get,
+            "firstName",
+            data["firstName"],
+            "Wrong firstName after registration"
+        )
+
+        Assertions.assert_json_value_by_name(
+            response_get,
+            "lastName",
+            data["lastName"],
+            "Wrong lastName after registration"
+        )
+
     @allure.title("Registration with existing email")
     @allure.story("Negative registration")
     @allure.severity(Severity.NORMAL)
